@@ -1,0 +1,32 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: biblioteca-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: biblioteca
+      POSTGRES_USER: biblioteca
+      POSTGRES_PASSWORD: biblioteca123
+    volumes:
+      - datos_biblioteca:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U biblioteca -d biblioteca"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: .
+    container_name: biblioteca-api
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+psycopg://biblioteca:biblioteca123@db:5432/biblioteca
+      SECRET_KEY: parcial-final-programacion-web
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  datos_biblioteca:
